@@ -1,63 +1,65 @@
+/** @format */
+
 const contentContainer = document.querySelector('#content-container');
 const cartCounterLabel = document.querySelector('#cart-counter-label');
 
 let cartCounter = 0;
-let cartPrice = 0;
+let cartPrise = 0;
 
 const incrementCounter = (label, cn) => {
   const counter = cn + 1;
 
-  label.innerHTML = `${counter}`;
-  if (counter === 1) cartCounterLabel.style.display = 'block';
-
+  cartCounterLabel.innerHTML = `${counter}`;
+  if (cartCounter === 1) {
+    cartCounterLabel.style.display = 'block';
+  }
   return counter;
 };
 
-const getMockData = (t) => +t.parentElement
-  .previousElementSibling
-  .innerHTML
-  .replace(/^\$(\d+)\s\D+(\d+).*$/u, '$1.$2');
+const getMockData = (target) =>
+  +target.parentElement.previousElementSibling.innerHTML.replace(
+    /^\$(\d+)\s\D+(\d+).*$/g,
+    '$1.$2'
+  );
 
 const getPrice = (t, price) => Math.round((price + getMockData(t)) * 100) / 100;
 
-const disableControls = (t, fn) => {
-  contentContainer.removeEventListener('click', fn);
+const disableControls = (t, el, fn) => {
   t.disabled = true;
+  el.removeEventListener('click', fn);
 };
-
-const enableControls = (t, fn) => {
-  contentContainer.addEventListener('click', fn);
+const enableControls = (t, el, fn) => {
   t.disabled = false;
+  el.addEventListener('click', fn);
 };
 
 const btnClickHandler = (e) => {
   const target = e.target;
   const interval = 2000;
-
-  let restoreHTML = null;
+  let restoreHtml = target.innerHTML;
 
   if (typeof target !== 'object') {
-    console.error('target не является объектом.');
-
     return;
   }
 
+  const mock = getMockData(target);
+
   if (target.matches('.item-actions__cart')) {
-
     cartCounter = incrementCounter(cartCounterLabel, cartCounter);
-
-    cartPrice = getPrice(target, cartPrice);
-    restoreHTML = target.innerHTML;
-
-    target.innerHTML = `Added ${cartPrice.toFixed(2)} $`;
-
-    disableControls(target, btnClickHandler);
-
-    setTimeout(() => {
-      target.innerHTML = restoreHTML;
-      enableControls(target, btnClickHandler);
-    }, interval);
   }
+
+  cartPrise = getPrice(target, cartPrise);
+
+  disableControls(target, contentContainer, btnClickHandler);
+
+  restoreHtml = target.innerHTML;
+
+  target.innerHTML = `Added ${cartPrise.toFixed(2)}$`;
+
+  setTimeout(() => {
+    target.innerHTML = restoreHtml;
+    enableControls(target, contentContainer, btnClickHandler);
+  }, interval);
 };
 
 contentContainer.addEventListener('click', btnClickHandler);

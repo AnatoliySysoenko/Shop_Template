@@ -10,19 +10,12 @@ const incrementCounter = (label, cn) => {
   const counter = cn + 1;
 
   cartCounterLabel.innerHTML = `${counter}`;
+
   if (cartCounter === 1) {
     cartCounterLabel.style.display = 'block';
   }
   return counter;
 };
-
-const getMockData = (target) =>
-  +target.parentElement.previousElementSibling.innerHTML.replace(
-    /^\$(\d+)\s\D+(\d+).*$/g,
-    '$1.$2'
-  );
-
-const getPrice = (t, price) => Math.round((price + getMockData(t)) * 100) / 100;
 
 const disableControls = (t, el, fn) => {
   t.disabled = true;
@@ -33,16 +26,22 @@ const enableControls = (t, el, fn) => {
   el.addEventListener('click', fn);
 };
 
+const getMockData = (t) =>
+  +t.parentElement.previousElementSibling.innerHTML.replace(
+    /^\$(\d+)\s\D+(\d+).*$/g,
+    '$1.$2'
+  );
+
+const getPrice = (t, price) => Math.round((price + getMockData(t)) * 100) / 100;
+
 const btnClickHandler = (e) => {
   const target = e.target;
-  const interval = 2000;
-  let restoreHtml = target.innerHTML;
+  const interval = 500;
+  let restoreHtml = null;
 
   if (typeof target !== 'object') {
     return;
   }
-
-  const mock = getMockData(target);
 
   if (target.matches('.item-actions__cart')) {
     cartCounter = incrementCounter(cartCounterLabel, cartCounter);
@@ -53,11 +52,11 @@ const btnClickHandler = (e) => {
   disableControls(target, contentContainer, btnClickHandler);
 
   restoreHtml = target.innerHTML;
-
-  target.innerHTML = `Added ${cartPrise.toFixed(2)}$`;
+  target.innerHTML = cartPrise.toFixed(2);
 
   setTimeout(() => {
     target.innerHTML = restoreHtml;
+
     enableControls(target, contentContainer, btnClickHandler);
   }, interval);
 };

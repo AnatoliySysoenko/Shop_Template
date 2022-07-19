@@ -7,23 +7,14 @@ let cartCounter = 0;
 let cartPrise = 0;
 
 const incrementCounter = (label, cn) => {
-  const counter = cn + 1;
+  const count = cn + 1;
 
-  cartCounterLabel.innerHTML = `${counter}`;
+  label.innerHTML = `${count}`;
 
   if (cartCounter === 1) {
-    cartCounterLabel.style.display = 'block';
+    label.style.display = 'block';
   }
-  return counter;
-};
-
-const disableControls = (t, el, fn) => {
-  t.disabled = true;
-  el.removeEventListener('click', fn);
-};
-const enableControls = (t, el, fn) => {
-  t.disabled = false;
-  el.addEventListener('click', fn);
+  return count;
 };
 
 const getMockData = (t) =>
@@ -32,33 +23,41 @@ const getMockData = (t) =>
     '$1.$2'
   );
 
-const getPrice = (t, price) => Math.round((price + getMockData(t)) * 100) / 100;
+const getPrice = (t, prise) => Math.round((prise + getMockData(t)) * 100) / 100;
+
+const disabledControls = (t, el, fn) => {
+  t.disable = true;
+  el.removeEventListener('click', fn);
+};
+const enabledControls = (t, el, fn) => {
+  t.disable = true;
+  el.addEventListener('click', fn);
+};
 
 const btnClickHandler = (e) => {
   const target = e.target;
-  const interval = 500;
-  let restoreHtml = null;
+  const inteval = 2000;
+  let restoreHTML = null;
 
-  if (typeof target !== 'object') {
-    return;
-  }
+  if (typeof target !== 'object') console.error('target is not a object');
 
   if (target.matches('.item-actions__cart')) {
     cartCounter = incrementCounter(cartCounterLabel, cartCounter);
+
+    cartPrise = getPrice(target, cartPrise);
+
+    restoreHTML = target.innerHTML;
+
+    target.innerHTML = `Added ${cartPrise.toFixed(2)} $`;
+
+    disabledControls(target, contentContainer, btnClickHandler);
+
+    setTimeout(() => {
+      target.innerHTML = restoreHTML;
+
+      enabledControls(target, contentContainer, btnClickHandler);
+    }, inteval);
   }
-
-  cartPrise = getPrice(target, cartPrise);
-
-  disableControls(target, contentContainer, btnClickHandler);
-
-  restoreHtml = target.innerHTML;
-  target.innerHTML = cartPrise.toFixed(2);
-
-  setTimeout(() => {
-    target.innerHTML = restoreHtml;
-
-    enableControls(target, contentContainer, btnClickHandler);
-  }, interval);
 };
 
 contentContainer.addEventListener('click', btnClickHandler);

@@ -1,63 +1,152 @@
 /** @format */
 
-const contentContainer = document.querySelector('#content-container');
+import { basketContainer, eraseBasket, createBasket } from './basket.js';
+
 const cartCounterLabel = document.querySelector('#cart-counter-label');
+const contentContainer = document.querySelector('#content-container');
+const basketCartBtn = document.querySelector('.page-header__cart-btn');
 
-let cartCounter = 0;
-let cartPrise = 0;
+let cardCounter = 0;
+let cardPrice = 0;
+let restoreHTML = null;
+let productInBasketArr = null;
 
-const incrementCounter = (label, cn) => {
-  const count = cn + 1;
+const cartCounterLabelPrint = (c) =>
+  c > 0
+    ? (cartCounterLabel.innerHTML = `${c}`)
+    : (cartCounterLabel.style.display = 'none');
 
-  label.innerHTML = `${count}`;
-
-  if (cartCounter === 1) {
-    label.style.display = 'block';
-  }
-  return count;
+const incrementCounter = () => {
+  cartCounterLabelPrint(++cardCounter);
+  if (cardCounter === 1) cartCounterLabel.style.display = 'block';
 };
 
 const getMockData = (t) =>
   +t.parentElement.previousElementSibling.innerHTML.replace(
-    /^\$(\d+)\s\D+(\d+).*$/g,
+    /^\$(\d+)\s\D+(\d+).*$/i,
     '$1.$2'
   );
 
-const getPrice = (t, prise) => Math.round((prise + getMockData(t)) * 100) / 100;
+const getPrice = (t, price) => Math.round((price + getMockData(t)) * 100) / 100;
 
-const disabledControls = (t, el, fn) => {
-  t.disable = true;
-  el.removeEventListener('click', fn);
+const getProductName = (t) =>
+  t.parentElement.parentElement.querySelector('.item-title').innerHTML;
+
+const disableControls = (t, fn) => {
+  t.disabled = true;
+  contentContainer.removeEventListener('click', fn);
 };
-const enabledControls = (t, el, fn) => {
-  t.disable = true;
-  el.addEventListener('click', fn);
+
+const enableControls = (t, fn) => {
+  t.disabled = false;
+  contentContainer.addEventListener('click', fn);
+};
+
+const writeProductToBasket = (t, arr) => {
+  let item = null;
+  let product = {
+    productName: getProductName(t),
+    productCode: getProductName(t),
+    price: getMockData(t),
+    count: 1,
+    sum: getMockData(t),
+  };
+  if (arr !== null) {
+    let i = 0;
+
+    while (item === null && i < arr.length) {
+      arr[i].productCode === getProductName(t) ? (item = i) : i++;
+    }
+    if (item === null) arr.push(product);
+    else {
+      arr[item].count++;
+      arr[item].sum = Math.round((arr[item].sum + arr[item].price) * 100) / 100;
+    }
+  } else arr = [product];
+
+  return arr;
 };
 
 const btnClickHandler = (e) => {
   const target = e.target;
-  const inteval = 2000;
-  let restoreHTML = null;
+  const interval = 500;
 
-  if (typeof target !== 'object') console.error('target is not a object');
+  if (target && target.matches('.item-actions__cart')) {
+    if (basketContainer !== null) eraseBasket();
 
-  if (target.matches('.item-actions__cart')) {
-    cartCounter = incrementCounter(cartCounterLabel, cartCounter);
+    incrementCounter();
 
-    cartPrise = getPrice(target, cartPrise);
+    productInBasketArr = writeProductToBasket(target, productInBasketArr);
 
+    cardPrice = getPrice(target, cardPrice);
     restoreHTML = target.innerHTML;
-
-    target.innerHTML = `Added ${cartPrise.toFixed(2)} $`;
-
-    disabledControls(target, contentContainer, btnClickHandler);
+    target.innerHTML = `Added ${cardPrice.toFixed(2)} $`;
+    disableControls(target, btnClickHandler);
 
     setTimeout(() => {
       target.innerHTML = restoreHTML;
 
-      enabledControls(target, contentContainer, btnClickHandler);
-    }, inteval);
+      enableControls(target, btnClickHandler);
+    }, interval);
   }
 };
 
-contentContainer.addEventListener('click', btnClickHandler);
+const basketBtnHandler = (e) => {
+  const target = e.target;
+
+  if (target) {
+    eraseBasket();
+    if (!target.matches('.basket__btn-next')) {
+      if (target.matches('.basket__btn-order')) {
+        // recieveOrder();
+      }
+      cardPrice = 0;
+      productInBasketArr = null;
+      cardCounter = 0;
+      cartCounterLabelPrint(cardCounter);
+    }
+  }
+};
+
+const createBasketWork = (c, pArr) => {
+  createBasket(c, pArr);
+  const basketBtn = document.querySelector('#btn-container');
+  basketBtn.addEventListener('click', basketBtnHandler);
+  basketContainer.addEventListener('click', delProductHandler);
+};
+
+const delProductHandler = (e) => {
+  const target = e.target;
+
+  if (target && target.matches('.basket__item-del')) {
+    let b = true;
+    let i = 0;
+
+    while (b && i < productInBasketArr.length) {
+      if (
+        productInBasketArr[i].productCode === target.parentElement.dataset.code
+      ) {
+        cardPrice -= productInBasketArr[i].sum;
+        cardCounter -= productInBasketArr[i].count;
+
+        productInBasketArr.splice(i, 1);
+        b = false;
+      } else i++;
+    }
+    eraseBasket();
+    createBasketWork(cardCounter, productInBasketArr);
+    cartCounterLabelPrint(cardCounter);
+  }
+};
+
+const basketClickHandler = (e) => {
+  const target = e.target;
+  if (target) {
+    createBasketWork(cardCounter, productInBasketArr);
+  }
+};
+
+export const shopInit = () => {
+  contentContainer.addEventListener('click', btnClickHandler);
+  basketCartBtn.addEventListener('click', basketClickHandler);
+};

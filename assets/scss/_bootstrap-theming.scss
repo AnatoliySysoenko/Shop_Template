@@ -20,9 +20,9 @@
     padding-left: 70px;
 
     > .nav-item {
-      text-align: center;
-
       flex-grow: 1;
+
+      text-align: center;
 
       :not(.show) {
         border-left: 1px solid $color-dark;
@@ -45,4 +45,4 @@
     border-color: $color-dark;
     background-color: $color-dark;
   }
-}
+}

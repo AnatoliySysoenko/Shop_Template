@@ -39,11 +39,11 @@
   }
 
   &__navbar-search {
+    flex-wrap: nowrap;
+
     height: 50px;
 
     border: 1px solid $color-dark;
-
-    flex-wrap: nowrap;
 
     @media (max-width: 991px) {
       display: inline-flex;
@@ -137,4 +137,4 @@
 
 .fa-shopping-cart {
   font-size: 1.5rem;
-}
+}

@@ -64,13 +64,12 @@
   &-image {
     display: flex;
     overflow: hidden;
+    align-items: center;
+    justify-content: center;
 
     height: 180px;
 
     background-color: rgba($color-light, 0.75);
-
-    align-items: center;
-    justify-content: center;
   }
 
   &-title {
@@ -205,4 +204,4 @@
       color: $color-light;
     }
   }
-}
+}
